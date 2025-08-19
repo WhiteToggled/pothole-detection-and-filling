@@ -4,16 +4,7 @@ from config import DEBUG
 
 
 def rectify_frame(frame, output_size=(500, 500)):
-    """
-    Warp the input frame using 4 ArUco markers placed at corners of the map.
-
-    Args:
-        frame (np.ndarray): input BGR image
-        output_size (tuple): (width, height) of the warped map
-
-    Returns:
-        np.ndarray: warped, top-down aligned map image
-    """
+   
     aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
     params = cv2.aruco.DetectorParameters()
     detector = cv2.aruco.ArucoDetector(aruco_dict, params)
