@@ -19,3 +19,5 @@ MQTT_TOPIC_COMMANDS = "car/commands"
 # Detection Parameters
 # ==========================
 MIN_POTHOLE_AREA = 500        # Minimum contour area to be considered a pothole
+GRID_SIZE = (10, 10)  # Grid size for mapping potholes
+IMAGE_SIZE = (500, 500)  # Size of the rectified image for processing
