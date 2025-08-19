@@ -27,7 +27,12 @@ def main():
     print(f"Pothole detected at pixels {pothole_px}")
 
     # 4. Convert to grid
+    # take the first detected pothole
+    if isinstance(pothole_px[0], (list, tuple)) or hasattr(pothole_px[0], "__iter__"):
+        pothole_px = pothole_px[0]
+
     pothole_cell = mapping.pixel_to_grid(pothole_px, IMAGE_SIZE, GRID_SIZE)
+
     print(f"Pothole mapped to grid {pothole_cell}")
 
     # Demo: assume car starts at bottom-center
