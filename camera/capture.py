@@ -16,7 +16,7 @@ def capture_image():
         frame = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
 
         if DEBUG:
-            filename = time.strftime("./capture_%Y%m%d_%H%M%S.jpg")
+            filename = f'./{time.strftime("capture_%Y%m%d_%H%M%S.jpg")}'
             with open(filename, "wb") as f:
                 f.write(response.content)
 
