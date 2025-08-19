@@ -1,13 +1,15 @@
 import cv2
 import numpy as np
+from config import DEBUG
 
 
-def rectify_frame(frame, marker_length=0.05):
+def rectify_frame(frame, output_size=(500, 500)):
     """
     Warp the input frame using 4 ArUco markers placed at corners of the map.
+
     Args:
         frame (np.ndarray): input BGR image
-        marker_length (float): marker size in meters (not critical for demo)
+        output_size (tuple): (width, height) of the warped map
 
     Returns:
         np.ndarray: warped, top-down aligned map image
@@ -21,16 +23,34 @@ def rectify_frame(frame, marker_length=0.05):
         print("[WARN] Could not detect all 4 ArUco markers.")
         return frame
 
-    # Sort markers by ID for consistency
+    # Flatten ids and take marker centers
     ids = ids.flatten()
-    sorted_idx = np.argsort(ids)
-    corners = [corners[i][0] for i in sorted_idx]
+    centers = [c[0].mean(axis=0) for c in corners]
 
-    # Expected corners: top-left, top-right, bottom-right, bottom-left
-    pts_src = np.array([c.mean(axis=0) for c in corners], dtype="float32")
-    pts_dst = np.array(
-        [[0, 0], [500, 0], [500, 500], [0, 500]], dtype="float32")
+    # Order points: top-left, top-right, bottom-right, bottom-left
+    pts_src = np.array(centers, dtype="float32")
+    s = pts_src.sum(axis=1)
+    diff = np.diff(pts_src, axis=1)
 
-    M = cv2.getPerspectiveTransform(pts_src, pts_dst)
-    warped = cv2.warpPerspective(frame, M, (500, 500))
+    ordered = np.zeros((4, 2), dtype="float32")
+    ordered[0] = pts_src[np.argmin(s)]      # top-left
+    ordered[2] = pts_src[np.argmax(s)]      # bottom-right
+    ordered[1] = pts_src[np.argmin(diff)]   # top-right
+    ordered[3] = pts_src[np.argmax(diff)]   # bottom-left
+
+    # Destination rectangle
+    w, h = output_size
+    pts_dst = np.array([[0, 0], [w, 0], [w, h], [0, h]], dtype="float32")
+
+    # Perspective warp
+    M = cv2.getPerspectiveTransform(ordered, pts_dst)
+    warped = cv2.warpPerspective(frame, M, output_size)
+
+    if DEBUG:
+        debug_img = frame.copy()
+        for (x, y) in ordered:
+            cv2.circle(debug_img, (int(x), int(y)), 5, (0, 0, 255), -1)
+        cv2.imshow("Rectification Debug", debug_img)
+        cv2.waitKey(1)
+
     return warped
