@@ -3,7 +3,7 @@ DEBUG = True
 # ==========================
 # Camera Config (ESP32-CAM)
 # ==========================
-ESP32CAM_IP = "10.165.45.249"
+ESP32CAM_IP = "10.105.164.249"
 ESP32CAM_CAPTURE_URL = f"http://{ESP32CAM_IP}/capture"
 
 # ==========================

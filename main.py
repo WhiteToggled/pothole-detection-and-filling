@@ -12,13 +12,12 @@ def main():
     #mqtt_client.connect()
 
     # 1. Capture
-    # frame = capture_image()
-    # print("Frame captured from camera.")
-
+    frame = capture_image()
+    print("Frame captured from camera.")
     # 2. Rectify using ArUco
     # warped = rectification.rectify_frame(frame)
     # print("Frame rectified with ArUco.")
-    grid_image = mapping.save_image_with_grid("capture_20250819_182040.jpg")
+    grid_image = mapping.save_image_with_grid(frame)
     print("Saved at:", grid_image)
 
 

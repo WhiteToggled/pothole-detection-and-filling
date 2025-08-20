@@ -23,13 +23,12 @@ def draw_grid(image, grid_size=(40, 25), color=(0, 0, 255)):
     return overlay
 
 
-def save_image_with_grid(input_path, output_dir=".", grid_size=(40, 25), color=(0, 0, 255)):
+def save_image_with_grid(image, output_dir=".", grid_size=(40, 25), color=(0, 0, 255)):
     """
     Loads an image, converts it to a grid, saves it with a timestamped filename, and returns the output path.
     """
-    image = cv2.imread(input_path)
     if image is None:
-        raise FileNotFoundError(f"Could not read image: {input_path}")
+        raise ValueError(f"no image found at {image}")
 
     image_with_grid = draw_grid(image, grid_size, color)
 

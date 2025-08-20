@@ -32,7 +32,7 @@ def deduct_pothole(input_path, grid_size=(40, 25), output_dir="."):
 
             # Check if the cell contains brown pixels
             cell_mask = mask[y_start:y_end, x_start:x_end]
-            if cv2.countNonZero(cell_mask) > 450:  # threshold, adjust as needed
+            if cv2.countNonZero(cell_mask) > 100:  # threshold, adjust as needed
                 cv2.rectangle(overlay, (x_start, y_start), (x_end, y_end), (0, 255, 0), 2)
 
     # Save image with timestamped filename
