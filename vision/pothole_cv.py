@@ -1,60 +1,45 @@
 import cv2
 import numpy as np
+from datetime import datetime
+import os
 
-
-def detect_potholes(image, lower_thresh=(0, 0, 0), upper_thresh=(100, 100, 100)):
-    """
-    Detect potholes in an image using color thresholding.
-
-    Args:
-        image (ndarray): Input BGR image (OpenCV format).
-        lower_thresh (tuple): Lower BGR threshold for pothole detection.
-        upper_thresh (tuple): Upper BGR threshold for pothole detection.
-
-    Returns:
-        mask (ndarray): Binary mask (255 = pothole, 0 = non-pothole).
-        contours (list): Contours of detected potholes.
-    """
+def deduct_pothole(input_path, grid_size=(40, 25), output_dir="."):
+    # Load image
+    image = cv2.imread(input_path)
     if image is None:
-        raise ValueError("Input image is None")
+        raise FileNotFoundError(f"Could not read image: {input_path}")
+    overlay = image.copy()
+    
+    h, w = image.shape[:2]
+    cell_w = w / grid_size[0]
+    cell_h = h / grid_size[1]
 
-    # Convert to HSV (better for color thresholding)
+    # Convert to HSV for better color detection
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-    # Define threshold ranges (dark colors for potholes)
-    lower = np.array(lower_thresh, dtype=np.uint8)
-    upper = np.array(upper_thresh, dtype=np.uint8)
+    # Define brownish color range (adjust if needed)
+    lower_brown = np.array([10, 50, 50])
+    upper_brown = np.array([30, 255, 200])
+    mask = cv2.inRange(hsv, lower_brown, upper_brown)
 
-    # Apply color threshold
-    mask = cv2.inRange(hsv, lower, upper)
+    # Loop over grid cells
+    for row in range(grid_size[1]):
+        for col in range(grid_size[0]):
+            x_start = int(col * cell_w)
+            y_start = int(row * cell_h)
+            x_end = int((col + 1) * cell_w)
+            y_end = int((row + 1) * cell_h)
 
-    # Morphological operations to reduce noise
-    kernel = np.ones((5, 5), np.uint8)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+            # Check if the cell contains brown pixels
+            cell_mask = mask[y_start:y_end, x_start:x_end]
+            if cv2.countNonZero(cell_mask) > 100:  # threshold, adjust as needed
+                cv2.rectangle(overlay, (x_start, y_start), (x_end, y_end), (0, 255, 0), 2)
 
-    # Find contours of pothole regions
-    contours, _ = cv2.findContours(
-        mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # Save image with timestamped filename
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"cordinates{timestamp}.jpg"
+    output_path = os.path.join(output_dir, filename)
+    cv2.imwrite(output_path, overlay)
 
-    return mask, contours
+    return output_path
 
-
-def draw_potholes(image, contours, color=(0, 0, 255)):
-    """
-    Draw bounding boxes around detected potholes.
-
-    Args:
-        image (ndarray): Input BGR image.
-        contours (list): Contours of detected potholes.
-        color (tuple): BGR color for bounding boxes.
-
-    Returns:
-        ndarray: Image with pothole bounding boxes.
-    """
-    output = image.copy()
-    for cnt in contours:
-        if cv2.contourArea(cnt) > 200:  # filter out small noise
-            x, y, w, h = cv2.boundingRect(cnt)
-            cv2.rectangle(output, (x, y), (x + w, y + h), color, 2)
-    return output
